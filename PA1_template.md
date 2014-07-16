@@ -143,6 +143,26 @@ The median total number of steps taken pre day is 10395
 
 ## What is the average daily activity pattern?
 
+```r
+meanSPI <- ddply(stepData, c("interval"),summarise,  
+                 mean = mean(steps, na.rm = TRUE))
+timeGrob <- ggplot(meanSPI, aes(x = interval, y = mean)) + geom_line() + geom_point()
+print(timeGrob)
+```
+
+![plot of chunk timeSeries](figure/timeSeries.png) 
+
+Determine which 5-minute interval across all the days in the dataset, contains
+the maximum number of steps taken.
+
+
+```r
+meanSPI$interval[which.max(meanSPI$mean)]
+```
+
+```
+## [1] 835
+```
 ## Imputing missing values
 
 
