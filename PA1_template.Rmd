@@ -40,12 +40,6 @@ imputed)
 3. Are there differences in activity patterns between weekdays and weekends?  
 (Missing values imputed)
 
-## Software Environment 
-
-```{r}
-sessionInfo()
-```
-
 ## Loading and preprocessing the data
 
 ### Download data and read from csv file into data frame
@@ -100,24 +94,42 @@ stepData$date <- as.Date(stepData$date)
 ## What is mean total number of steps taken per day?
 
 Load ggplot2 package for graphics generation
+Load plyr package for ddply function
 
 ```{r}
 library(ggplot2)
+library(plyr)
 ```
 
 Generate histogram of total number of steps taken per day
 
 ```{r totalStepsPerDay}
-grob <- ggplot(stepData, aes(x = date, y = steps)) + geom_bar(stat = "identity")  
-suppressWarnings(print(grob))
+totalSteps <- ddply(stepData, c("date"),summarize,  
+                    Frequency = sum(steps, na.rm = TRUE))
+grob <- ggplot(totalSteps, aes(x = date, y = Frequency)) + geom_bar(stat = "identity")
+print(grob)
 ```
 
+Calculate mean and median total number of steps taken per day
+
+```{r computeMeanMedian, results = "hide"}
+theMean <- mean(totalSteps$Frequency)
+theMedian <- median(totalSteps$Frequency)
+```
+
+The mean total number of steps taken per day is `r theMean`   
+The median total number of steps taken pre day is `r theMedian`
+
 ## What is the average daily activity pattern?
-
-
 
 ## Imputing missing values
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+## Software Environment 
+
+```{r}
+sessionInfo()
+```

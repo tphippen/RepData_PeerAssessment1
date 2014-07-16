@@ -40,30 +40,6 @@ imputed)
 3. Are there differences in activity patterns between weekdays and weekends?  
 (Missing values imputed)
 
-## Software Environment 
-
-
-```r
-sessionInfo()
-```
-
-```
-## R version 3.0.3 (2014-03-06)
-## Platform: x86_64-apple-darwin10.8.0 (64-bit)
-## 
-## locale:
-## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
-## 
-## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  methods   base     
-## 
-## other attached packages:
-## [1] knitr_1.6
-## 
-## loaded via a namespace (and not attached):
-## [1] evaluate_0.5.5 formatR_0.10   stringr_0.6.2  tools_3.0.3
-```
-
 ## Loading and preprocessing the data
 
 ### Download data and read from csv file into data frame
@@ -134,28 +110,68 @@ stepData$date <- as.Date(stepData$date)
 ## What is mean total number of steps taken per day?
 
 Load ggplot2 package for graphics generation
+Load plyr package for ddply function
 
 
 ```r
 library(ggplot2)
+library(plyr)
 ```
 
 Generate histogram of total number of steps taken per day
 
 
 ```r
-grob <- ggplot(stepData, aes(x = date, y = steps)) + geom_bar(stat = "identity")  
-suppressWarnings(print(grob))
+totalSteps <- ddply(stepData, c("date"),summarize,  
+                    Frequency = sum(steps, na.rm = TRUE))
+grob <- ggplot(totalSteps, aes(x = date, y = Frequency)) + geom_bar(stat = "identity")
+print(grob)
 ```
 
 ![plot of chunk totalStepsPerDay](figure/totalStepsPerDay.png) 
 
+Calculate mean and median total number of steps taken per day
+
+
+```r
+theMean <- mean(totalSteps$Frequency)
+theMedian <- median(totalSteps$Frequency)
+```
+
+The mean total number of steps taken per day is 9354.2295   
+The median total number of steps taken pre day is 10395
+
 ## What is the average daily activity pattern?
-
-
 
 ## Imputing missing values
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+## Software Environment 
+
+
+```r
+sessionInfo()
+```
+
+```
+## R version 3.0.3 (2014-03-06)
+## Platform: x86_64-apple-darwin10.8.0 (64-bit)
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+## [1] plyr_1.8.1    ggplot2_1.0.0 knitr_1.6    
+## 
+## loaded via a namespace (and not attached):
+##  [1] colorspace_1.2-4 digest_0.6.4     evaluate_0.5.5   formatR_0.10    
+##  [5] grid_3.0.3       gtable_0.1.2     labeling_0.2     MASS_7.3-33     
+##  [9] munsell_0.4.2    proto_0.3-10     Rcpp_0.11.2      reshape2_1.4    
+## [13] scales_0.2.4     stringr_0.6.2    tools_3.0.3
+```
