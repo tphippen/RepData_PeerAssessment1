@@ -40,13 +40,77 @@ imputed)
 3. Are there differences in activity patterns between weekdays and weekends?  
 (Missing values imputed)
 
+## Software Environment 
+
+```{r}
+sessionInfo()
+```
+
 ## Loading and preprocessing the data
 
+### Download data and read from csv file into data frame
 
+While, the github repository does contain the activity data in a zip file, I  
+have opted to download the data from  the Course website cited above.
+
+If directory to contain the data does not exist, make the directory
+
+```{r}
+if(!file.exists("Steps_Data")) {
+    dir.create("Steps_Data")
+}
+```
+
+Download the zip file
+
+```{r}
+zipURL <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+download.file(zipURL,"./Steps_Data/temp",method = "curl")
+```
+
+Unzip zip file
+
+```{r}
+unzip("./Steps_Data/temp", exdir = "./Steps_Data/")
+```
+
+Delete the zip file
+
+```{r}
+unlink("./Steps_Data/temp")
+```
+
+Read data from csv file into data frame and view head of data frame
+
+```{r}
+stepData <- read.table("./Steps_Data/activity.csv", header = TRUE, sep = ",",
+                       na.strings = "NA", 
+                       colClasses = c("integer","character","integer"))
+head(stepData)
+```
+
+### Preprocess the data
+
+Convert dates which currently have class "character" to Date Objects
+
+```{r}
+stepData$date <- as.Date(stepData$date)
+```
 
 ## What is mean total number of steps taken per day?
 
+Load ggplot2 package for graphics generation
 
+```{r}
+library(ggplot2)
+```
+
+Generate histogram of total number of steps taken per day
+
+```{r totalStepsPerDay}
+grob <- ggplot(stepData, aes(x = date, y = steps)) + geom_bar(stat = "identity")  
+suppressWarnings(print(grob))
+```
 
 ## What is the average daily activity pattern?
 

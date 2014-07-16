@@ -40,13 +40,115 @@ imputed)
 3. Are there differences in activity patterns between weekdays and weekends?  
 (Missing values imputed)
 
+## Software Environment 
+
+
+```r
+sessionInfo()
+```
+
+```
+## R version 3.0.3 (2014-03-06)
+## Platform: x86_64-apple-darwin10.8.0 (64-bit)
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+## [1] knitr_1.6
+## 
+## loaded via a namespace (and not attached):
+## [1] evaluate_0.5.5 formatR_0.10   stringr_0.6.2  tools_3.0.3
+```
+
 ## Loading and preprocessing the data
 
+### Download data and read from csv file into data frame
 
+While, the github repository does contain the activity data in a zip file, I  
+have opted to download the data from  the Course website cited above.
+
+If directory to contain the data does not exist, make the directory
+
+
+```r
+if(!file.exists("Steps_Data")) {
+    dir.create("Steps_Data")
+}
+```
+
+Download the zip file
+
+
+```r
+zipURL <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+download.file(zipURL,"./Steps_Data/temp",method = "curl")
+```
+
+Unzip zip file
+
+
+```r
+unzip("./Steps_Data/temp", exdir = "./Steps_Data/")
+```
+
+Delete the zip file
+
+
+```r
+unlink("./Steps_Data/temp")
+```
+
+Read data from csv file into data frame and view head of data frame
+
+
+```r
+stepData <- read.table("./Steps_Data/activity.csv", header = TRUE, sep = ",",
+                       na.strings = "NA", 
+                       colClasses = c("integer","character","integer"))
+head(stepData)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
+### Preprocess the data
+
+Convert dates which currently have class "character" to Date Objects
+
+
+```r
+stepData$date <- as.Date(stepData$date)
+```
 
 ## What is mean total number of steps taken per day?
 
+Load ggplot2 package for graphics generation
 
+
+```r
+library(ggplot2)
+```
+
+Generate histogram of total number of steps taken per day
+
+
+```r
+grob <- ggplot(stepData, aes(x = date, y = steps)) + geom_bar(stat = "identity")  
+suppressWarnings(print(grob))
+```
+
+![plot of chunk totalStepsPerDay](figure/totalStepsPerDay.png) 
 
 ## What is the average daily activity pattern?
 
