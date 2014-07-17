@@ -110,15 +110,17 @@ grob <- ggplot(totalSteps, aes(x = date, y = Frequency)) + geom_bar(stat = "iden
 print(grob)
 ```
 
-Calculate mean and median total number of steps taken per day
+Calculate mean total number of steps taken per day
 
-```{r computeMeanMedian, results = "hide"}
-theMean <- mean(totalSteps$Frequency)
-theMedian <- median(totalSteps$Frequency)
+```{r meanSteps}
+mean(totalSteps$Frequency)
 ```
 
-The mean total number of steps taken per day is `r theMean`   
-The median total number of steps taken pre day is `r theMedian`
+Calculate median total number of steps taken per day   
+
+```{r medianSteps}
+median(totalSteps$Frequency)
+```
 
 ## What is the average daily activity pattern?
 ```{r timeSeries}
@@ -136,9 +138,90 @@ meanSPI$interval[which.max(meanSPI$mean)]
 ```
 ## Imputing missing values
 
+* Calculate and report the total number of missing values in the data set.
 
+```{r totalNAs}
+sum(is.na(stepData$steps))
+```
+
+* Devise a strategy for filling in all the missing values in the data set
+
+To devise a reasonable strategy for imputing the missing data values, I  
+needed to get an idea of how the NAs were distributed throughout the data set.
+For each date, I determined the percentage of values that were NA.
+
+```{r NAsPerDay}
+dailyNAs <- ddply(stepData, c("date"),summarize,
+                  percent_NA = 100 * sum(is.na(steps))/length(steps))
+day_of_week <- weekdays(dailyNAs$date)
+dailyNAs <- cbind(day_of_week, dailyNAs)
+print(dailyNAs)
+```
+
+A quick glance at the the dailyNAs data frame reveals that each day either has   
+all missing values (100%) or no missing values (0%). Out of the 61 days, there   
+are 8 days for which all of the values are missing. Two of these days fall on a  
+Monday, two on a Friday, and one each on Wednesday, Thursday, Saturday, and,   
+Sunday. Based on this data I will use the following imputation strategy:
+
+For each five-minute interval, I will replace the missing value with the mean of    
+the five-minute interval for that particular weekday (e.g. if the missing value    
+occurs at interval 4 on a Sunday, I will replace the missing value with the mean   
+number of steps for interval 4's that occur on Sundays).
+
+Generate table of values to be used for imputation.
+
+```{r imputationTable}
+day <- factor(
+    weekdays(stepData$date),
+    c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
+stepData <- cbind(day,stepData)
+imputationTable <- ddply(stepData, c("day","interval"), summarize,
+                          mean = mean(steps, na.rm = TRUE))
+```
+
+Data collection began on 2012-10-01, a Monday, and ended on 2012-11-30, a   
+Friday. Data was collected for 61 days with the steps recorded for 288  
+five-minute intervals each day for a total of 17568 observations. The imputation   
+table contains the means of the 288 intervals for each of the 7 days   
+(Monday- Sunday) resulting in 2016 rows. To vectorize the missing value  
+replacement operation, will generate a vector of length 17568 from the   
+imputation Table's mean number of steps column
+
+```{r imputationVector}
+impVec <- c(rep(imputationTable$mean, times = 8),imputationTable$mean[1:1440])
+```
+
+Replace any missing value with its imputed value.
+
+```{r replaceNAs}
+stepData$steps[is.na(stepData$steps)] <- impVec[is.na(stepData$steps)]
+```
+
+Generate histogram of total number of steps taken per day
+
+```{r totalStepsPerDayImputed}
+totalSteps <- ddply(stepData, c("date"),summarize,  
+                    Frequency = sum(steps, na.rm = TRUE))
+grob <- ggplot(totalSteps, aes(x = date, y = Frequency)) + geom_bar(stat = "identity")
+print(grob)
+```
+
+Calculate mean total number of steps taken per day
+
+```{r meanStepsImputed}
+mean(totalSteps$Frequency)
+```
+
+Calculate median total number of steps taken per day   
+
+```{r medianStepsImputed}
+median(totalSteps$Frequency)
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
 
 ## Software Environment 
 
