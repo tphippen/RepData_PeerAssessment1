@@ -1,5 +1,7 @@
 # Reproducible Research: Peer Assessment 1
 
+
+
 ## The Dataset used for the assignment
 
 The data for this assignment was obtained from a personal activity monitoring  
@@ -176,7 +178,7 @@ meanSPI$interval[which.max(meanSPI$mean)]
 ```
 ## Imputing missing values
 
-* Calculate and report the total number of missing values in the data set.
+Calculate and report the total number of missing values in the data set.
 
 
 ```r
@@ -187,11 +189,10 @@ sum(is.na(stepData$steps))
 ## [1] 2304
 ```
 
-* Devise a strategy for filling in all the missing values in the data set
-
 To devise a reasonable strategy for imputing the missing data values, I  
 needed to get an idea of how the NAs were distributed throughout the data set.
-For each date, I determined the percentage of values that were NA.
+For each date, I determined the day of the week corresponding to each date and    
+the percentage of NA values.
 
 
 ```r
@@ -267,18 +268,25 @@ print(dailyNAs)
 ## 61      Friday 2012-11-30        100
 ```
 
-A quick glance at the the dailyNAs data frame reveals that each day either has   
-all missing values (100%) or no missing values (0%). Out of the 61 days, there   
-are 8 days for which all of the values are missing. Two of these days fall on a  
-Monday, two on a Friday, and one each on Wednesday, Thursday, Saturday, and,   
-Sunday. Based on this data I will use the following imputation strategy:
+A brief examination of the the dailyNAs data frame revealed that each date   
+either has all missing values (100%) or no missing values (0%). Out of the 61   
+dates, there are 8 dates for which all of the values are missing.   
+Two of these dates fall on a Monday, two on a Friday, and one each on Wednesday,   
+Thursday, Saturday, and, Sunday. Based on this data, the following imputation  
+strategy was devised:
 
-For each five-minute interval, I will replace the missing value with the mean of    
-the five-minute interval for that particular weekday (e.g. if the missing value    
-occurs at interval 4 on a Sunday, I will replace the missing value with the mean   
-number of steps for interval 4's that occur on Sundays).
+For each five-minute interval, the missing value will be replaced with the mean   
+of the five-minute interval for that particular day (e.g. if the missing value   
+occurs at interval 4 on a Sunday, it will be replaced with the missing   
+value with the mean number of steps for interval 4's that occur on Sundays).
 
-Generate table of values to be used for imputation.
+The first step in the imputation process is generation of values that can be   
+used for imputation. For each day of the week, the steps were counted for 288   
+five-minute intervals. It is therefore necessary to generate means for the 288   
+intervals that occured on Sundays, the 288 intervals that occured on Mondays,   
+etc. Therefore 288 * 7 = 2016 means will be generated. Note, although there are   
+no missing Tuesday values, mean values for Tuesday intervals will still be   
+calculated. 
 
 
 ```r
@@ -286,7 +294,7 @@ day <- factor(
     weekdays(stepData$date),
     c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
 stepData <- cbind(day,stepData)
-imputationTable <- ddply(stepData, c("day","interval"), summarize,
+imputationFrame <- ddply(stepData, c("day","interval"), summarize,
                           mean = mean(steps, na.rm = TRUE))
 ```
 
@@ -300,10 +308,10 @@ imputation Table's mean number of steps column
 
 
 ```r
-impVec <- c(rep(imputationTable$mean, times = 8),imputationTable$mean[1:1440])
+impVec <- c(rep(imputationFrame$mean, times = 8),imputationFrame$mean[1:1440])
 ```
 
-Replace any missing value with its imputed value.
+Replace any missing value in the step data with its imputed value.
 
 
 ```r
@@ -316,8 +324,8 @@ Generate histogram of total number of steps taken per day
 ```r
 totalSteps <- ddply(stepData, c("date"),summarize,  
                     Frequency = sum(steps, na.rm = TRUE))
-grob <- ggplot(totalSteps, aes(x = date, y = Frequency)) + geom_bar(stat = "identity")
-print(grob)
+grob <- ggplot(totalSteps, aes(x = date, y = Frequency))
+grob + geom_bar(stat = "identity")
 ```
 
 ![plot of chunk totalStepsPerDayImputed](figure/totalStepsPerDayImputed.png) 
@@ -346,7 +354,29 @@ median(totalSteps$Frequency)
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+Create a new factor variable with two levels - "weekday" and "weekend"
 
+
+```r
+stepData$day <- as.character(stepData$day)
+stepData$day <- ifelse((stepData$day == "Saturday") | (stepData$day == "Sunday")
+                       ,"weekend","weekday")
+stepData$day <- factor(stepData$day)
+```
+
+Make a plot contaianing a time series plot of the five-minute interval and the
+average number of steps taken.
+
+
+```r
+library(lattice)
+meanSPI_weekend_vs_weekday <- ddply(stepData, c("day","interval"),summarise,  
+                 mean = mean(steps))
+xyplot(mean ~ interval | day, data = meanSPI_weekend_vs_weekday, type = "b",
+       ylab = "Number of steps", layout = c(1,2))
+```
+
+![plot of chunk timeSeries_weekend_vs_weekday](figure/timeSeries_weekend_vs_weekday.png) 
 
 ## Software Environment 
 
@@ -366,7 +396,7 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] plyr_1.8.1    ggplot2_1.0.0 knitr_1.6    
+## [1] lattice_0.20-29 plyr_1.8.1      ggplot2_1.0.0   knitr_1.6      
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] colorspace_1.2-4 digest_0.6.4     evaluate_0.5.5   formatR_0.10    
