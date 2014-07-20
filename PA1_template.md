@@ -2,6 +2,8 @@
 
 
 
+This analysis was last run on July 19, 2014.
+
 ## The Dataset used for the assignment
 
 The data for this assignment was obtained from a personal activity monitoring  
@@ -39,7 +41,10 @@ imputed)
 
 2. What was the average daily activity pattern? (Missing values not imputed)
 
-3. Are there differences in activity patterns between weekdays and weekends?  
+3. What was the mean total number of steps taken per day? (Missing values   
+imputed)
+
+4. Are there differences in activity patterns between weekdays and weekends?  
 (Missing values imputed)
 
 ## Loading and preprocessing the data
@@ -47,40 +52,24 @@ imputed)
 ### Download data and read from csv file into data frame
 
 While, the github repository does contain the activity data in a zip file, I  
-have opted to download the data from  the Course website cited above.
-
-If directory to contain the data does not exist, make the directory
+opted to download the data from  the Course website cited above and stored   
+"activity.csv"", in a directory named Steps_Data
 
 
 ```r
 if(!file.exists("Steps_Data")) {
     dir.create("Steps_Data")
 }
-```
 
-Download the zip file
-
-
-```r
 zipURL <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 download.file(zipURL,"./Steps_Data/temp",method = "curl")
-```
 
-Unzip zip file
-
-
-```r
 unzip("./Steps_Data/temp", exdir = "./Steps_Data/")
-```
-
-Delete the zip file
-
-
-```r
 unlink("./Steps_Data/temp")
 ```
 
-Read data from csv file into data frame and view head of data frame
+Data was read from CSV file into data frame and the head of data frame   
+displayed.
 
 
 ```r
@@ -102,7 +91,8 @@ head(stepData)
 
 ### Preprocess the data
 
-Convert dates which currently have class "character" to Date Objects
+Because dates were loaded into the data frame with class "character", it was   
+necessary to convert them to Date objects
 
 
 ```r
@@ -111,8 +101,8 @@ stepData$date <- as.Date(stepData$date)
 
 ## What is mean total number of steps taken per day?
 
-Load ggplot2 package for graphics generation
-Load plyr package for ddply function
+Loaded ggplot2 package for graphics generation.     
+Loaded plyr package for ddply function.
 
 
 ```r
@@ -120,19 +110,23 @@ library(ggplot2)
 library(plyr)
 ```
 
-Generate histogram of total number of steps taken per day
+Before Generating a  histogram of the total number of steps taken per day,   
+ddply() was used to apply the sum function to the data frame subsetted by date. 
 
 
 ```r
 totalSteps <- ddply(stepData, c("date"),summarize,  
                     Frequency = sum(steps, na.rm = TRUE))
-grob <- ggplot(totalSteps, aes(x = date, y = Frequency)) + geom_bar(stat = "identity")
-print(grob)
+
+grob <- ggplot(totalSteps, aes(x = date, y = Frequency))
+grob <- grob + geom_bar(stat = "identity")
+grob + labs( title = "Total Number of Steps Taken Per Day", 
+                     x = "Date", y = "Number of Steps")
 ```
 
 ![plot of chunk totalStepsPerDay](figure/totalStepsPerDay.png) 
 
-Calculate mean total number of steps taken per day
+The mean total number of steps taken per day was calculated. 
 
 
 ```r
@@ -143,7 +137,7 @@ mean(totalSteps$Frequency)
 ## [1] 9354
 ```
 
-Calculate median total number of steps taken per day   
+The median total number of steps taken pre day was calculated.  
 
 
 ```r
@@ -156,17 +150,25 @@ median(totalSteps$Frequency)
 
 ## What is the average daily activity pattern?
 
+Before Generating a time series of the mean number of steps taken per interval,   
+ddply() was used to apply the mean function to the data frame subsetted by  
+interval. 
+
+
 ```r
 meanSPI <- ddply(stepData, c("interval"),summarise,  
                  mean = mean(steps, na.rm = TRUE))
-timeGrob <- ggplot(meanSPI, aes(x = interval, y = mean)) + geom_line() + geom_point()
-print(timeGrob)
+
+timeGrob <- ggplot(meanSPI, aes(x = interval, y = mean)) 
+timeGrob <- timeGrob + geom_line() + geom_point()
+timeGrob + labs(title = "Mean Number of Steps Taken per Five-Minute Time Interval",
+                x = "Interval", y = "Mean Number of Steps")
 ```
 
 ![plot of chunk timeSeries](figure/timeSeries.png) 
 
-Determine which 5-minute interval across all the days in the dataset, contains
-the maximum number of steps taken.
+The 5-interval across all days in the datataset which contains the maximum   
+number of steps taken was determined.
 
 
 ```r
@@ -176,9 +178,13 @@ meanSPI$interval[which.max(meanSPI$mean)]
 ```
 ## [1] 835
 ```
+
 ## Imputing missing values
 
-Calculate and report the total number of missing values in the data set.
+Before devising a reasonable strategy for imputing the missing data values,     
+the distribution of missing values(NAs) in the data set was determined.
+
+The total number of missing values in the data set was calculated.
 
 
 ```r
@@ -189,15 +195,24 @@ sum(is.na(stepData$steps))
 ## [1] 2304
 ```
 
-To devise a reasonable strategy for imputing the missing data values, I  
-needed to get an idea of how the NAs were distributed throughout the data set.
-For each date, I determined the day of the week corresponding to each date and    
-the percentage of NA values.
+The percentage of missing values in the data set was calculated.
+
+
+```r
+sum(is.na(stepData$steps))/length(stepData$steps)
+```
+
+```
+## [1] 0.1311
+```
+
+The percentage of NA values for each date was calcualted.
 
 
 ```r
 dailyNAs <- ddply(stepData, c("date"),summarize,
                   percent_NA = 100 * sum(is.na(steps))/length(steps))
+
 day_of_week <- weekdays(dailyNAs$date)
 dailyNAs <- cbind(day_of_week, dailyNAs)
 print(dailyNAs)
@@ -268,25 +283,25 @@ print(dailyNAs)
 ## 61      Friday 2012-11-30        100
 ```
 
-A brief examination of the the dailyNAs data frame revealed that each date   
-either has all missing values (100%) or no missing values (0%). Out of the 61   
-dates, there are 8 dates for which all of the values are missing.   
+A brief examination of the the dailyNAs data frame (above) revealed that each   
+date has either all missing values (100%) or no missing values (0%).   
+Out of the 61 dates, there are 8 dates for which all of the values are missing.   
 Two of these dates fall on a Monday, two on a Friday, and one each on Wednesday,   
-Thursday, Saturday, and, Sunday. Based on this data, the following imputation  
+Thursday,Saturday, and, Sunday. Based on these results, the following imputation   
 strategy was devised:
 
-For each five-minute interval, the missing value will be replaced with the mean   
-of the five-minute interval for that particular day (e.g. if the missing value   
-occurs at interval 4 on a Sunday, it will be replaced with the missing   
-value with the mean number of steps for interval 4's that occur on Sundays).
+If the number of steps for a five-minute interval is missing, the imputed value         
+will be the mean of the five-minute interval for that particular day (e.g. if     
+the missing value occurs at interval 4 on a Sunday,the imputed value will be the    
+mean number of steps for interval 4's that occurred on Sundays).
 
-The first step in the imputation process is generation of values that can be   
-used for imputation. For each day of the week, the steps were counted for 288   
-five-minute intervals. It is therefore necessary to generate means for the 288   
-intervals that occured on Sundays, the 288 intervals that occured on Mondays,   
-etc. Therefore 288 * 7 = 2016 means will be generated. Note, although there are   
-no missing Tuesday values, mean values for Tuesday intervals will still be   
-calculated. 
+The first step in the imputation process was to generate values that could be   
+used for imputation. It was noted that for each day of the week, the steps were  
+counted for 288 five-minute intervals. It was therefore necessary to generate  
+means for the 288 intervals that occured on Sundays, the 288 intervals that    
+occured on Mondays,etc. Therefore 288 * 7 = 2016 means were generated. Note,   
+although there are no missing Tuesday values, mean values for Tuesday intervals   
+were still calculated. 
 
 
 ```r
@@ -303,45 +318,49 @@ Friday. Data was collected for 61 days with the steps recorded for 288
 five-minute intervals each day for a total of 17568 observations. The imputation   
 table contains the means of the 288 intervals for each of the 7 days   
 (Monday- Sunday) resulting in 2016 rows. To vectorize the missing value  
-replacement operation, will generate a vector of length 17568 from the   
-imputation Table's mean number of steps column
+replacement operation, a vector of length 17568 from the imputationFrame's
+mean number of steps column.
 
 
 ```r
 impVec <- c(rep(imputationFrame$mean, times = 8),imputationFrame$mean[1:1440])
 ```
 
-Replace any missing value in the step data with its imputed value.
+Missing value in the step data were replaceds with imputed values.
 
 
 ```r
 stepData$steps[is.na(stepData$steps)] <- impVec[is.na(stepData$steps)]
 ```
 
-Generate histogram of total number of steps taken per day
+Before Generating a  histogram of the total number of steps taken per day,   
+ddply() was used to apply the sum function to the data frame subsetted by date. 
 
 
 ```r
 totalSteps <- ddply(stepData, c("date"),summarize,  
                     Frequency = sum(steps, na.rm = TRUE))
+
 grob <- ggplot(totalSteps, aes(x = date, y = Frequency))
-grob + geom_bar(stat = "identity")
+grob <- grob + geom_bar(stat = "identity")
+grob + labs( title = "Total Number of Steps Taken Per Day", 
+                     x = "Date", y = "Number of Steps")
 ```
 
 ![plot of chunk totalStepsPerDayImputed](figure/totalStepsPerDayImputed.png) 
 
-Calculate mean total number of steps taken per day
+The mean total number of steps taken per day was calclated.
 
 
 ```r
-mean(totalSteps$Frequency)
+round(mean(totalSteps$Frequency), 2)
 ```
 
 ```
 ## [1] 10821
 ```
 
-Calculate median total number of steps taken per day   
+The median total number of steps taken per day was calculated.   
 
 
 ```r
@@ -352,9 +371,27 @@ median(totalSteps$Frequency)
 ## [1] 11015
 ```
 
+To calculate the mean, the total number of steps taken each day are summed and   
+divided by the number of days (61). Prior to imputation, the 8 days composed    
+entirely of NAs contributed nothing to the numerator. After imputation, each of     
+these 8 days contributed positvely to the numerator. Therefore, the mean    
+estimated after imputation is greater than the mean estimated before imputation.
+
+The median total number of steps can be determined by arranging the total number   
+of steps taken each day in ascending order and selecting the middle value. In   
+this case there were 61 vaules so the median corresponds to the 31st value.   
+Prior to imputation, the 8 days composed entirely of NAs were assigned values of   
+0 placing beloow the median. After imputation, it was possible that the now all  
+positive values for the 8 days would still fall below the originally-calculated   
+median. If this had been the case, the median would have remained the same.    
+Since the median was greater after imputation, it can be inferred    
+after imputation, it can be inferred that at least one of the days now has a    
+value greater than the originally calculated median.  
+
 ## Are there differences in activity patterns between weekdays and weekends?
 
-Create a new factor variable with two levels - "weekday" and "weekend"
+A new factor variable, "day", with two levels - "weekday" and "weekend" was   
+created. 
 
 
 ```r
@@ -364,16 +401,20 @@ stepData$day <- ifelse((stepData$day == "Saturday") | (stepData$day == "Sunday")
 stepData$day <- factor(stepData$day)
 ```
 
-Make a plot contaianing a time series plot of the five-minute interval and the
-average number of steps taken.
+Before genearting a time series plot of the five-minute interval and the average    
+number of steps taken (averaged across all weekday days or weekend days),    
+ddply() was used to apply the mean function to the data subsetted by type of day    
+(weekend or weekday), and time interval. 
 
 
 ```r
 library(lattice)
 meanSPI_weekend_vs_weekday <- ddply(stepData, c("day","interval"),summarise,  
                  mean = mean(steps))
+
 xyplot(mean ~ interval | day, data = meanSPI_weekend_vs_weekday, type = "b",
-       ylab = "Number of steps", layout = c(1,2))
+       main = "Mean Number of Steps Taken per Five-Minute Time Interval\nOn Weekdays vs Weekends", 
+       ylab = "Number of Steps", layout = c(1,2))
 ```
 
 ![plot of chunk timeSeries_weekend_vs_weekday](figure/timeSeries_weekend_vs_weekday.png) 
