@@ -181,17 +181,18 @@ hljs.initHighlightingOnLoad();
 <body>
 <h1>Reproducible Research: Peer Assessment 1</h1>
 
-<p>Loaded ggplot2 package for graphics generation.<br/>
+<p>Loaded ggplot2 and lattice packages for graphics generation.<br/>
 Loaded plyr package for ddply function.</p>
 
 <pre><code class="r">library(ggplot2)
 library(plyr)
+library(lattice)
 </code></pre>
 
 <pre><code class="r">dateTime = Sys.time()
 </code></pre>
 
-<p>This analysis was last run on 2014-07-20 16:41:44</p>
+<p>This analysis was last run on 2014-07-20 16:47:24</p>
 
 <h2>The Dataset used for the assignment</h2>
 
@@ -540,8 +541,7 @@ number of steps taken (averaged across all weekday days or weekend days),<br/>
 ddply() was used to apply the mean function to the data subsetted by type of day<br/>
 (weekend or weekday), and time interval. </p>
 
-<pre><code class="r">library(lattice)
-meanSPI_weekend_vs_weekday &lt;- ddply(stepData, c(&quot;day&quot;,&quot;interval&quot;),summarise,  
+<pre><code class="r">meanSPI_weekend_vs_weekday &lt;- ddply(stepData, c(&quot;day&quot;,&quot;interval&quot;),summarise,  
                  mean = mean(steps))
 
 xyplot(mean ~ interval | day, data = meanSPI_weekend_vs_weekday, type = &quot;b&quot;,

@@ -1,12 +1,13 @@
 # Reproducible Research: Peer Assessment 1
 
-Loaded ggplot2 package for graphics generation.     
+Loaded ggplot2 and lattice packages for graphics generation.     
 Loaded plyr package for ddply function.
 
 
 ```r
 library(ggplot2)
 library(plyr)
+library(lattice)
 ```
 
 
@@ -14,7 +15,7 @@ library(plyr)
 dateTime = Sys.time()
 ```
 
-This analysis was last run on 2014-07-20 16:41:44
+This analysis was last run on 2014-07-20 16:47:24
 
 ## The Dataset used for the assignment
 
@@ -411,7 +412,6 @@ ddply() was used to apply the mean function to the data subsetted by type of day
 
 
 ```r
-library(lattice)
 meanSPI_weekend_vs_weekday <- ddply(stepData, c("day","interval"),summarise,  
                  mean = mean(steps))
 
