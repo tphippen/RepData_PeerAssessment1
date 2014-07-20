@@ -1,8 +1,20 @@
 # Reproducible Research: Peer Assessment 1
 
+Loaded ggplot2 package for graphics generation.     
+Loaded plyr package for ddply function.
 
 
-This analysis was last run on July 19, 2014.
+```r
+library(ggplot2)
+library(plyr)
+```
+
+
+```r
+dateTime = Sys.time()
+```
+
+This analysis was last run on 2014-07-20 16:41:44
 
 ## The Dataset used for the assignment
 
@@ -101,15 +113,6 @@ stepData$date <- as.Date(stepData$date)
 
 ## What is mean total number of steps taken per day?
 
-Loaded ggplot2 package for graphics generation.     
-Loaded plyr package for ddply function.
-
-
-```r
-library(ggplot2)
-library(plyr)
-```
-
 Before Generating a  histogram of the total number of steps taken per day,   
 ddply() was used to apply the sum function to the data frame subsetted by date. 
 
@@ -152,7 +155,7 @@ median(totalSteps$Frequency)
 
 Before Generating a time series of the mean number of steps taken per interval,   
 ddply() was used to apply the mean function to the data frame subsetted by  
-interval. 
+the 5-minute intervals. 
 
 
 ```r
@@ -206,7 +209,7 @@ sum(is.na(stepData$steps))/length(stepData$steps)
 ## [1] 0.1311
 ```
 
-The percentage of NA values for each date was calcualted.
+The percentage of NA values for each date was calculated.
 
 
 ```r
@@ -287,7 +290,7 @@ A brief examination of the the dailyNAs data frame (above) revealed that each
 date has either all missing values (100%) or no missing values (0%).   
 Out of the 61 dates, there are 8 dates for which all of the values are missing.   
 Two of these dates fall on a Monday, two on a Friday, and one each on Wednesday,   
-Thursday,Saturday, and, Sunday. Based on these results, the following imputation   
+Thursday,Saturday, and Sunday. Based on these results, the following imputation   
 strategy was devised:
 
 If the number of steps for a five-minute interval is missing, the imputed value         
@@ -299,7 +302,7 @@ The first step in the imputation process was to generate values that could be
 used for imputation. It was noted that for each day of the week, the steps were  
 counted for 288 five-minute intervals. It was therefore necessary to generate  
 means for the 288 intervals that occured on Sundays, the 288 intervals that    
-occured on Mondays,etc. Therefore 288 * 7 = 2016 means were generated. Note,   
+occured on Mondays, etc. Therefore 288 * 7 = 2016 means were generated. Note,      
 although there are no missing Tuesday values, mean values for Tuesday intervals   
 were still calculated. 
 
@@ -318,8 +321,8 @@ Friday. Data was collected for 61 days with the steps recorded for 288
 five-minute intervals each day for a total of 17568 observations. The imputation   
 table contains the means of the 288 intervals for each of the 7 days   
 (Monday- Sunday) resulting in 2016 rows. To vectorize the missing value  
-replacement operation, a vector of length 17568 from the imputationFrame's
-mean number of steps column.
+replacement operation, a vector of length 17568 from the imputationFrame's    
+mean number of steps column was created.
 
 
 ```r
@@ -353,7 +356,7 @@ The mean total number of steps taken per day was calclated.
 
 
 ```r
-round(mean(totalSteps$Frequency), 2)
+mean(totalSteps$Frequency)
 ```
 
 ```
